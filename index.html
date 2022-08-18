@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Darkhall</title>
+    <style>
+        #messages {
+            margin-top: 50px;
+            width: 95%;
+            padding-right: 5px;
+            padding-bottom: 80px;
+            word-break: break-word;
+        }
+
+        #bottom-bar {
+            position: fixed;
+            bottom: 0px;
+            width: 100%;
+            height: 50px;
+            padding-top: 13px;
+            left: 0px;
+            background-color: #cacaca;
+        }
+
+        .chat-message {
+            margin-top: 5px;
+        }
+
+
+        #chat {
+            width: 83%;
+            /* resize: none; */
+            margin-left: 2%;
+            background-color: white;
+            height: 61%;
+            padding: 5px;
+            margin-bottom: 24px;
+            overflow: auto;
+        }
+
+        #send {
+            width: 38px;
+            height: 39px;
+            border-radius: 72px;
+            background-color: #0c48d1;
+            border: none;
+            margin-left: 7px;
+        }
+
+        #chat:active {
+            border: none;
+        }
+
+        #send:active {
+            border: none;
+        }
+
+        #header {
+            position: fixed;
+            width: 100%;
+            height: 30px;
+            background-color: #1e92bf;
+            top: 0px;
+            left: 0px;
+            color: white;
+            text-align: center;
+            padding-top: 9px;
+        }
+
+            #header p {
+                margin-top: 2px;
+                font-family: arial;
+            }
+
+            #header a {
+                color: white;
+                text-decoration: none;
+            }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .bubble {
+            padding-left: 5px;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div id="header"><p>Altilunium Darkhall - <span id="bid"></span> <a href="https://rtnf.prose.sh/altilunium_darkhall" target="_blank"><small>[about]</small></a>  </p></div>
+    <div id="messages" class="card-block">Connecting to server...</div>
+    <br>
+    <div id="bottom-bar" style="display:flex; flex-direction:row">
+        <div id="chat" spellcheck="false" name="inputMessage" maxlength="450"  contenteditable="true"></div>
+        <button id="send" class="btn"></button>
+    </div>
+</body>
+
+<script src="gun.js"></script>
+<script>
+
+    localStorage.removeItem('gun/')
+    var uid;
+
+    if (localStorage.getItem('uid')) {
+        uid = localStorage.getItem('uid')
+    }
+    else {
+        uid = Math.floor(Math.random() * 100000);
+        localStorage.setItem('uid', uid)
+    }
+
+
+
+
+
+    function findGetParameter(parameterName) {
+        var result = null,
+            tmp = [];
+        location.search
+            .substr(1)
+            .split("&")
+            .forEach(function (item) {
+                tmp = item.split("=");
+                if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+            });
+        return result;
+    }
+    const bid = document.querySelector('#bid')
+
+    console.log(findGetParameter("g"))
+    var board = findGetParameter("g")
+    console.log(board)
+    if (board != null) {
+        console.log("Ada!")
+        bid.innerHTML = board
+    } else {
+        board = 'test'
+        bid.innerHTML = "General Room"
+    }
+
+
+    //gun = Gun(['https://rtnf-gun.herokuapp.com/gun', 'https://gun.ardinusawan.xyz/gun']);
+    //const ws = new WebSocket("ws://localhost:8001")
+    const ws = new WebSocket("ws://altilunium.my.id:8001/")
+    ws.onopen = () =>  {
+        ws.send(board)
+        document.getElementById('messages').innerHTML = ""
+    }
+
+    
+
+    var chatLog = []
+    var identify = false
+    //copy.put(null)
+    
+
+function reRender(){
+     var mother = document.getElementById('messages')
+   mother.innerHTML = ""
+            chatLog.forEach(iter)
+
+            function iter(v, i, a) {
+                mother.innerHTML = mother.innerHTML + v + "<br>"
+            }
+            window.scrollTo(0, document.body.scrollHeight);    
+}
+
+
+    ws.onmessage = function(data){
+        console.log(data.data)
+        
+
+        if (!identify) {
+            var today = new Date();
+            var time = today.getHours() + ":" + today.getMinutes()
+            var c = "<small><i>" + uid + " is entering this room at " + time + "</i></small>"
+            ws.send(c) //broadcast to anyone
+            
+            identify = true
+        }
+        else{
+            chatLog.push(data.data)
+        }
+
+        
+        reRender()
+
+    };
+
+
+    const send = document.querySelector('#send')
+    const input = document.querySelector('#chat')
+    send.onclick = () => {
+        sendMessage()
+
+
+    };
+
+
+    var stringToColour = function (str) {
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var colour = '#';
+        for (var i = 0; i < 3; i++) {
+            var value = (hash >> (i * 8)) & 0xFF;
+            colour += ('00' + value.toString(16)).substr(-2);
+        }
+        return colour;
+    }
+
+
+    async function sendMessage() {
+        if (input.innerHTML == "clear") {
+            copy.put(null)
+        }
+        else if (input.innerHTML.includes("<script>")) {
+
+        }
+        else {
+            var c = "<b class='bubble' style='border-left:5px solid " + stringToColour(uid) + "'>" + uid + "</b> : " + input.innerHTML
+            
+            //copy.put(JSON.stringify(chatLog))
+
+            console.log("Sending :"+c)
+            ws.send(c)
+           
+
+
+
+            if (input.innerHTML.includes("data:image")) {
+                package = board + " : " + "img posting"
+            }
+            else {
+                package = board + " : " + input.innerHTML
+            }
+            //logAct(package)
+        }
+
+        input.innerHTML = "";
+        input.focus();
+    }
+
+
+    async function logAct(x) {
+        let data = new FormData()
+        data.append('a1', x)
+        fetch('https://rtnf.000webhostapp.com/n.php', {
+            method: 'POST',
+            body: data,
+        }).then(data => {
+            data.text().then(function (result) {
+                console.log("A!")
+                console.log(result)
+
+            })
+        })
+
+    }
+
+
+
+
+
+    //document.onkeypress = handle(e);
+
+    input.addEventListener('keypress', (e) => {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            sendMessage();
+        }
+    })
+
+
+    window.addEventListener('beforeunload', (event) => {
+        var today = new Date();
+        var time = today.getHours() + ":" + today.getMinutes()
+        var c = "<small><i>" + uid + " is leaving this room at " + time + "</i></small>"
+        ws.send(c)
+        //chatLog.push(c)
+        //copy.put(JSON.stringify(chatLog))
+
+        if (xhr.readyState == 4) return;
+        event.preventDefault();
+        event.returnValue = '';
+    })
+
+
+
+
+    //paste.oninput = () => { copy.put(paste.value) };
+    //copy.on((data) => { paste.value = data });</script>
