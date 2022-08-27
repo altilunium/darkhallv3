@@ -11,3 +11,4 @@ Self-hosted chat platform
 ## NodeJS Port
 * https://github.com/altilunium/darkhallv3-nodejs
 * https://darkhallv31.altilunium.repl.co/?g=github
+  * Change the '?g=' parameter to create your own chatroom. For example, '?g=yourroomname'
