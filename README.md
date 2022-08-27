@@ -7,3 +7,7 @@ Self-hosted chat platform
 3. Open index.html, look at `ws://`. Point it to your python server (a.py)
 4. Host index.html on webserver. Access it by using browser
 5. Create a new chatroom by specifying roomID on the GET parameter `/?g=customRoom`
+
+## NodeJS Port
+* https://github.com/altilunium/darkhallv3-nodejs
+* https://darkhallv31.altilunium.repl.co/?g=github
